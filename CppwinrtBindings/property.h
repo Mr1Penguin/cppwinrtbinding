@@ -15,12 +15,9 @@ namespace winrt::ABI::Windows::Foundation
 template<typename T>
 struct Property : implements<Property<T>, ICustomProperty>
 {
-	Property(hstring_view name, bool canRead = false, bool canWrite = false) :  _canRead(canRead), _canWrite(canWrite)
+	Property(hstring_view name, bool canRead = false, bool canWrite = false) :  _name(name), _canRead(canRead), _canWrite(canWrite)
 	{
-		_name = name;
-		auto t1 = typeid(T).name();
-		auto tmp = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(t1);
-		_typename = tmp;
+		_typename = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(typeid(T).name());
 	}
 
 	bool CanRead()

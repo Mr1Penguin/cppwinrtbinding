@@ -98,10 +98,10 @@ struct App : ApplicationT<App>
 
 		auto btn = uiElement.FindName(L"Btn").as<ButtonBase>();
 		btn.Tapped([this](auto && ...) { vm.changeX(); });
-		auto tb = uiElement.FindName(L"TB").as<TextBlock>();
+		tb = uiElement.FindName(L"TB").as<TextBlock>();
 		event_token token;
 
-		tb.Loaded([this, tb(tb)](auto && ...)
+		tb.Loaded([this](auto && ...)
 		{
 			Binding a;
 			a.Source(vm);
@@ -116,6 +116,7 @@ struct App : ApplicationT<App>
 	}
 
 private:
+	TextBlock tb = nullptr;
 	ViewModel vm;
 };
 
