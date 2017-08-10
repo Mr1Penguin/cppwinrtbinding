@@ -18,6 +18,7 @@ struct Property : implements<Property<T>, ICustomProperty>
 	Property(hstring_view name, bool canRead = false, bool canWrite = false) :  _name(name), _canRead(canRead), _canWrite(canWrite)
 	{
 		auto tmp = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(typeid(T).name());
+		OutputDebugStringW(tmp.c_str());
 		std::replace(std::begin(tmp), std::end(tmp), ' ', '_');
 		_typename = tmp;
 	}
@@ -100,6 +101,6 @@ private:
 	T _value;
 	bool _canRead;
 	bool _canWrite;
-	hstring_view _name = L"";
-	hstring_view _typename = L"";
+	hstring _name;
+	hstring _typename;
 };
