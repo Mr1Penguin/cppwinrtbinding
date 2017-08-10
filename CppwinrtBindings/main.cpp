@@ -18,7 +18,7 @@ using namespace winrt::Windows::Storage;
 
 struct Hash {
 	size_t operator() (const event_token &token) const {
-		return token.value;
+		return std::hash<int64_t>{}(token.value);
 	}
 };
 
@@ -41,7 +41,7 @@ struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropert
 
 	ICustomProperty GetCustomProperty(hstring_view name)
 	{
-		if (name == L"X")
+		if (name == L"X") 
 		{
 			return X;
 		}

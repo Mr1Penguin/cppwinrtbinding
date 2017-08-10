@@ -54,43 +54,37 @@ struct Property : implements<Property<T>, ICustomProperty>
 	}
 
 	template <typename Q = T>
-	typename std::enable_if<std::is_base_of<IInspectable, Q>::value, IInspectable>::type GetValue(IInspectable a)
+	IInspectable GetValue(IInspectable a)
 	{
 		return _value;
 	}
 
 	template <typename Q = T>
-	typename std::enable_if<std::is_base_of<IInspectable, Q>::value, void>::type SetValue(IInspectable a, IInspectable b)
+	void SetValue(IInspectable a, IInspectable b)
 	{
 		_value = b;
 	}
 
-	template<typename Type, typename Expected>
-	using if_type = std::enable_if<std::is_same<Expected, Type>::value, IInspectable>;
-
-	template<typename Type, typename Expected>
-	using if_type2 = std::enable_if<std::is_same<Expected, Type>::value, void>;
-
-	template <typename Q = T>
-	typename if_type<Q, hstring>::type GetValue(IInspectable a)
+	template <>
+	IInspectable GetValue<hstring>(IInspectable a)
 	{
 		return PropertyValue::CreateString(_value);
 	}
 
-	template <typename Q = T>
-	typename if_type<Q, int>::type GetValue(IInspectable a)
+	template <>
+	IInspectable GetValue<int>(IInspectable a)
 	{
 		return PropertyValue::CreateInt32(_value);
 	}
 
-	template <typename Q = T>
-	typename if_type2<Q, hstring>::type SetValue(IInspectable a, IInspectable b)
+	template <>
+	void SetValue<hstring>(IInspectable a, IInspectable b)
 	{
 		_value = b.as<IReference<hstring>>().Value();
 	}
 
-	template <typename Q = T>
-	typename if_type2<Q, int>::type SetValue(IInspectable a, IInspectable b)
+	template <>
+	void SetValue<int>(IInspectable a, IInspectable b)
 	{
 		_value = b.as<IReference<int>>().Value();
 	}
