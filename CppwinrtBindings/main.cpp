@@ -95,7 +95,7 @@ struct App : ApplicationT<App>
 		auto const file = co_await packageFolder.GetFileAsync(L"MainPage.Xaml");
 		auto const xaml = co_await FileIO::ReadTextAsync(file);
 		auto const uiElement = XamlReader::Load(xaml).as<Page>();
-
+		uiElement.DataContext(vm);
 		auto btn = uiElement.FindName(L"Btn").as<ButtonBase>();
 		btn.Tapped([this](auto && ...) { vm.changeX(); });
 		tb = uiElement.FindName(L"TB").as<TextBlock>();

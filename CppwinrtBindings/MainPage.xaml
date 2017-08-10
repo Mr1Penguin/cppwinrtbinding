@@ -6,6 +6,7 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <TextBlock x:Name="TB2" Text="{Binding X}"/>
         <Button x:Name="Btn">
             <TextBlock x:Name="TB"/>
         </Button>
