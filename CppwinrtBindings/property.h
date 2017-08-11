@@ -57,7 +57,7 @@ struct Property : implements<Property<T>, ICustomProperty>
 	}
 
 	template <typename Q = T>
-	IInspectable GetValue(IInspectable a)
+	IInspectable GetValue(IInspectable a) const
 	{
 		return _value;
 	}
@@ -65,17 +65,17 @@ struct Property : implements<Property<T>, ICustomProperty>
 	template <typename Q = T>
 	void SetValue(IInspectable a, IInspectable b)
 	{
-		_value = b;
+		_value = b.try_as<Q>();
 	}
 
 	template <>
-	IInspectable GetValue<hstring>(IInspectable a)
+	IInspectable GetValue<hstring>(IInspectable a) const
 	{
 		return PropertyValue::CreateString(_value);
 	}
 
 	template <>
-	IInspectable GetValue<int>(IInspectable a)
+	IInspectable GetValue<int>(IInspectable a) const
 	{
 		return PropertyValue::CreateInt32(_value);
 	}
@@ -90,6 +90,11 @@ struct Property : implements<Property<T>, ICustomProperty>
 	void SetValue<int>(IInspectable a, IInspectable b)
 	{
 		_value = b.as<IReference<int>>().Value();
+	}
+
+	T GetValue() const
+	{
+		return _value;
 	}
 
 	void SetValue(T value)

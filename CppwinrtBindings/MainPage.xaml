@@ -6,7 +6,11 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <TextBlock x:Name="TB2" Text="{Binding X}"/>
+        <StackPanel>
+            <TextBlock x:Name="TB2" Text="{Binding X}"/>
+            <TextBlock Text="{Binding Person}"/>
+            <TextBlock Text="{Binding Person.Age}"/>
+        </StackPanel>
         <Button x:Name="Btn">
             <TextBlock x:Name="TB"/>
         </Button>
