@@ -8,8 +8,8 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel>
             <TextBlock x:Name="TB2" Text="{Binding X}"/>
-            <TextBlock Text="{Binding Person}"/>
-            <TextBlock Text="{Binding Person.Age}"/>
+            <TextBlock Text="{Binding Person.Name}"/>
+            <TextBlock Text="{Binding Person.Age}" Visibility="{Binding Person.Vis}"/>
         </StackPanel>
         <Button x:Name="Btn">
             <TextBlock x:Name="TB"/>

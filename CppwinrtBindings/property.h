@@ -12,31 +12,43 @@ namespace winrt::ABI::Windows::Foundation
 	template <> struct __declspec(uuid("3a14233f-a037-4ac0-a0ad-c4bb0bbf0112")) __declspec(novtable) IReference<HSTRING__ *> : impl_IReference<HSTRING__ *> {};
 }
 
-template<typename T>
-struct Property : implements<Property<T>, ICustomProperty>
+namespace wf = winrt::Windows::Foundation;
+
+struct PropertyBase : IInspectable, implements<PropertyBase, ICustomPropertyProvider, ICustomProperty>
 {
-	Property(hstring_view name, bool canRead = false, bool canWrite = false) :  _name(name), _canRead(canRead), _canWrite(canWrite)
+	PropertyBase() {}
+
+	PropertyBase(hstring name) : _name(name)
 	{
-		auto tmp = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(typeid(T).name());
-		OutputDebugStringW(tmp.c_str());
-		std::replace(std::begin(tmp), std::end(tmp), ' ', '_');
-		_typename = tmp;
+		m_ptr = this;
 	}
 
-	bool CanRead()
+	PropertyBase(const PropertyBase & p)
 	{
-		return _canRead;
+		_name = p._name;
+		_canRead = p._canRead;
+		_canWrite = p._canWrite;
+		_typename = p._typename;
+		_value = p._value;
 	}
 
-	bool CanWrite()
+	PropertyBase &operator =(const PropertyBase & other)
 	{
-		return _canWrite;
+		return *this;
 	}
 
 	hstring_view Name()
 	{
 		return _name;
 	}
+
+	virtual ICustomProperty GetCustomProperty(hstring_view name)
+	{
+		return nullptr;
+	}
+
+	bool CanRead() { return _canRead; }
+	bool CanWrite() { return _canWrite; }
 
 	TypeName Type() {
 		TypeName a;
@@ -45,67 +57,97 @@ struct Property : implements<Property<T>, ICustomProperty>
 		return a;
 	}
 
-	IInspectable GetIndexedValue(IInspectable a, IInspectable b)
+	wf::IInspectable GetIndexedValue(wf::IInspectable a, wf::IInspectable b)
 	{
 		//not implemented
 		return nullptr;
 	}
 
-	void SetIndexedValue(IInspectable a, IInspectable b, IInspectable c)
+	void SetIndexedValue(wf::IInspectable a, wf::IInspectable b, wf::IInspectable c)
 	{
 		//not implemented
 	}
 
-	template <typename Q = T>
-	IInspectable GetValue(IInspectable a) const
+	ICustomProperty GetIndexedProperty(hstring_view name, TypeName type)
+	{
+		return nullptr;
+	}
+
+	hstring_view GetStringRepresentation()
+	{
+		return _typename;
+	}
+
+	virtual wf::IInspectable GetValue(wf::IInspectable a)
 	{
 		return _value;
 	}
 
-	template <typename Q = T>
-	void SetValue(IInspectable a, IInspectable b)
+	void SetValue(wf::IInspectable a, wf::IInspectable b)
 	{
-		_value = b.try_as<Q>();
+		_value = b;
 	}
 
-	template <>
-	IInspectable GetValue<hstring>(IInspectable a) const
-	{
-		return PropertyValue::CreateString(_value);
-	}
+protected:
 
-	template <>
-	IInspectable GetValue<int>(IInspectable a) const
-	{
-		return PropertyValue::CreateInt32(_value);
-	}
-
-	template <>
-	void SetValue<hstring>(IInspectable a, IInspectable b)
-	{
-		_value = b.as<IReference<hstring>>().Value();
-	}
-
-	template <>
-	void SetValue<int>(IInspectable a, IInspectable b)
-	{
-		_value = b.as<IReference<int>>().Value();
-	}
-
-	T GetValue() const
-	{
-		return _value;
-	}
-
-	void SetValue(T value)
-	{
-		_value = value;
-	}
-
-private:
-	T _value;
-	bool _canRead;
+	bool _canRead; 
 	bool _canWrite;
 	hstring _name;
 	hstring _typename;
+	wf::IInspectable _value;
+};
+
+template<typename T, bool canRead = true, bool canWrite = false>
+struct Property : PropertyBase
+{
+	Property(hstring name) : PropertyBase(name)
+	{
+		auto tmp = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(typeid(T).name());
+		std::replace(std::begin(tmp), std::end(tmp), ' ', '_');
+		_typename = tmp;
+		if (!std::is_base_of<wf::IInspectable, T>::value)
+			SetValue(T());
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<std::is_base_of<wf::IInspectable, Q>::value, wf::IInspectable>::type
+	GetValue() const
+	{
+		return _value;
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<!std::is_base_of<wf::IInspectable, Q>::value, Q>::type
+	GetValue() const
+	{
+		return _value.as<IReference<Q>>().Value();
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<std::is_base_of<wf::IInspectable, Q>::value>::type
+	SetValue(wf::IInspectable arg)
+	{
+		_value = arg;
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<std::is_same<int32_t, Q>::value>::type
+	SetValue(Q arg)
+	{
+		_value = PropertyValue::CreateInt32(arg);
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<std::is_same<hstring, Q>::value>::type
+		SetValue(Q arg)
+	{
+		_value = PropertyValue::CreateString(arg);
+	}
+
+	template <typename Q = T>
+	typename std::enable_if<std::is_same<bool, Q>::value>::type
+		SetValue(Q arg)
+	{
+		_value = PropertyValue::CreateBoolean(arg);
+	}
 };

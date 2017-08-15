@@ -24,108 +24,42 @@ struct Hash {
 
 namespace wf = winrt::Windows::Foundation;
 
-struct __declspec(uuid("3a12345f-a037-4ac0-a0ad-c4bb0bbf0112")) Person : IInspectable, implements<Person, ICustomPropertyProvider, ICustomProperty>
+struct __declspec(uuid("3a12345f-a037-4ac0-a0ad-c4bb0bbf0112")) Person : Property<Person>
 {
-	Person(std::nullptr_t) noexcept {}
-
-	Person()
+	Person() : Property(L"Person")
 	{
-		NameProp.SetValue(L"Test");
-		Age.SetValue(42);
-		m_ptr = this;
+		NameProp.SetValue(hstring(L"Test"));
+		AgeProp.SetValue(42);
 	}
 
-	Person(const Person &p)
+	ICustomProperty GetCustomProperty(hstring_view name) override
 	{
-		NameProp.SetValue(p.NameProp.GetValue());
-		Age.SetValue(p.Age.GetValue());
+		if (name == AgeProp.Name()) return AgeProp;
+		if (name == NameProp.Name()) return NameProp;
+		if (name == VisibleProp.Name()) return VisibleProp;
+		return nullptr;
 	}
 
-	Person &operator =(const Person & other)
+	wf::IInspectable GetValue(wf::IInspectable a) override
 	{
 		return *this;
 	}
 
-	ICustomProperty GetCustomProperty(hstring_view name)
-	{
-		if (name == L"Name")
-			return NameProp;
-
-		if (name == L"Age")
-			return Age;
-
-		return nullptr;
-	}
-
-	ICustomProperty GetIndexedProperty(hstring_view name, TypeName type)
-	{
-		return nullptr;
-	}
-
-	hstring_view GetStringRepresentation()
-	{
-		return L"Person";
-	}
-
-	Windows::UI::Xaml::Interop::TypeName Type() {
-		TypeName a;
-		a.Kind = TypeKind::Custom;
-		a.Name = L"Person";
-		return a;
-	}
-
-	bool CanRead()
-	{
-		return true;
-	}
-
-	bool CanWrite()
-	{
-		return true;
-	}
-
-	hstring_view Name()
-	{
-		return L"Person";
-	}
-
-	wf::IInspectable GetIndexedValue(wf::IInspectable a, wf::IInspectable b)
-	{
-		//not implemented
-		return nullptr;
-	}
-
-	void SetIndexedValue(wf::IInspectable a, wf::IInspectable b, wf::IInspectable c)
-	{
-		//not implemented
-	}
-
-	wf::IInspectable GetValue(wf::IInspectable a) const
-	{
-		
-		auto ret = this->as<wf::IInspectable>();
-		return ret;
-	}
-
-	void SetValue(wf::IInspectable a, wf::IInspectable b)
-	{
-		*this = b.as<Person>();
-	}
-
-	Property<hstring> NameProp{ L"Name", true, true };
-	Property<int> Age{ L"Age", true, true };
+	Property<bool> VisibleProp { L"Vis" };
+	Property<hstring> NameProp{ L"Name" };
+	Property<int> AgeProp{ L"Age" };
 };
 
 struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropertyChanged>
 {
 	ViewModel()
 	{
-		X.SetValue(L"Hello!");
+		X.SetValue(hstring(L"Hello!")); 
 	}
 
 	void changeX()
 	{
-		X.SetValue(L"It works!");
+		X.SetValue(hstring(L"It works!"));
 		std::for_each(std::begin(handlers), std::end(handlers),
 			[this](std::pair<event_token, PropertyChangedEventHandler> p) 
 		{
@@ -151,7 +85,7 @@ struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropert
 
 	hstring_view GetStringRepresentation()
 	{
-		return nullptr;
+		return L"lol";
 	}
 
 	Windows::UI::Xaml::Interop::TypeName Type() {
@@ -179,7 +113,7 @@ struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropert
 
 	std::unordered_map<event_token,PropertyChangedEventHandler, Hash> handlers;
 
-	Property<hstring> X { L"X", true, true };
+	Property<hstring> X { L"X" };
 	Person Person;
 };
 
