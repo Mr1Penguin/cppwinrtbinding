@@ -10,6 +10,15 @@
             <TextBlock x:Name="TB2" Text="{Binding X}"/>
             <TextBlock Text="{Binding Person.Name}"/>
             <TextBlock Text="{Binding Person.Age}" Visibility="{Binding Person.Vis}"/>
+            <ListView ItemsSource="{Binding Persons}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding Name}"/> <Run Text="+"/> <Run Text="{Binding Age}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </StackPanel>
         <Button x:Name="Btn">
             <TextBlock x:Name="TB"/>

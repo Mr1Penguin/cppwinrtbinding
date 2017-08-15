@@ -14,6 +14,7 @@ using namespace winrt::Windows::UI::Xaml::Input;
 using namespace winrt::Windows::UI::Xaml::Interop;
 using namespace winrt::Windows::UI::Xaml::Markup;
 using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Storage;
 
 struct Hash {
@@ -24,13 +25,9 @@ struct Hash {
 
 namespace wf = winrt::Windows::Foundation;
 
-struct __declspec(uuid("3a12345f-a037-4ac0-a0ad-c4bb0bbf0112")) Person : Property<Person>
+struct Person_impl : Property_impl
 {
-	Person() : Property(L"Person")
-	{
-		NameProp.SetValue(hstring(L"Test"));
-		AgeProp.SetValue(42);
-	}
+	Person_impl(hstring name) : Property_impl(name) {}
 
 	ICustomProperty GetCustomProperty(hstring_view name) override
 	{
@@ -40,21 +37,59 @@ struct __declspec(uuid("3a12345f-a037-4ac0-a0ad-c4bb0bbf0112")) Person : Propert
 		return nullptr;
 	}
 
-	wf::IInspectable GetValue(wf::IInspectable a) override
-	{
-		return *this;
-	}
-
-	Property<bool> VisibleProp { L"Vis" };
+	Property<bool> VisibleProp{ L"Vis" };
 	Property<hstring> NameProp{ L"Name" };
 	Property<int> AgeProp{ L"Age" };
 };
+
+struct __declspec(uuid("3a12345f-a037-4ac0-a0ad-c4bb0bbf0112")) Person : Property<Person, Person_impl>
+{
+	Person(std::nullptr_t) : Property(L"Person") {}
+
+	Person &operator =(const Person & other)
+	{
+		wf::IUnknown::operator=(other);
+		return *this;
+	}
+
+	Person() : Property(L"Person")
+	{
+		GPI()->NameProp.SetValue(hstring(L"Test"));
+		GPI()->AgeProp.SetValue(42);
+		SetValue(*this);
+	}
+
+	Person_impl* GPI() { return dynamic_cast<Person_impl*>(m_ptr); }
+};
+
+template<>
+struct __declspec(uuid("1234567f-a037-4ac0-a0ad-c4bb0bbf0112")) winrt::ABI::Windows::Foundation::Collections::IVector<Person> : impl_IVector<Person> {};
+template<>
+struct __declspec(uuid("3234567f-a037-4ac0-a0ad-c4bb0bbf0112")) winrt::ABI::Windows::Foundation::Collections::IVectorView<Person> : impl_IVectorView<Person> {};
+template<>
+struct __declspec(uuid("4234567f-a037-4ac0-a0ad-c4bb0bbf0112")) winrt::ABI::Windows::Foundation::Collections::IIterable<Person> : impl_IIterable<Person> {};
+template<>
+struct __declspec(uuid("5234567f-a037-4ac0-a0ad-c4bb0bbf0112")) winrt::ABI::Windows::Foundation::Collections::IIterator<Person> : impl_IIterator<Person> {};
 
 struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropertyChanged>
 {
 	ViewModel()
 	{
+		/*IVector<::Person> v = winrt::single_threaded_vector<::Person>();
+		auto p = ::Person();
+		::Person & pp = p;
+		const ::Person & cpp = p;
+		A(p);
+		v.Append(::Person());
+		v.Append(::Person());
+		v.GetAt(1).GPI()->NameProp.SetValue(hstring(L"I DID IT!"));
+		Persons.SetValue(v);*/
 		X.SetValue(hstring(L"Hello!")); 
+	}
+
+	void A(const ::Person & p)
+	{
+
 	}
 
 	void changeX()
@@ -113,6 +148,7 @@ struct ViewModel : implements<ViewModel, ICustomPropertyProvider, INotifyPropert
 
 	std::unordered_map<event_token,PropertyChangedEventHandler, Hash> handlers;
 
+	Property<wf::Collections::IVector<Person>> Persons{ L"Persons" };
 	Property<hstring> X { L"X" };
 	Person Person;
 };
@@ -131,6 +167,8 @@ struct App : ApplicationT<App>
 		tb = uiElement.FindName(L"TB").as<TextBlock>();
 		event_token token;
 
+		A(tb);
+
 		tb.Loaded([this](auto && ...)
 		{
 			Binding a;
@@ -143,6 +181,11 @@ struct App : ApplicationT<App>
 		auto window = Window::Current();
 		window.Content(uiElement);
 		window.Activate();
+	}
+
+	void A(const TextBlock & a)
+	{
+
 	}
 
 private:
